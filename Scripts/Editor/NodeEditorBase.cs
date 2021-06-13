@@ -49,8 +49,14 @@ namespace XNodeEditor.Internal {
 				editor.target = target;
 				editor.serializedObject = new SerializedObject(target);
 				editor.window = window;
+
+				// OnCreate is obsolete - use OnEnable instead
+#pragma warning disable 0618
 				editor.OnCreate();
+#pragma warning restore 0618
+
 				editors.Add(target, editor);
+				editor.OnEnable();
 			}
 			if (editor.target == null) editor.target = target;
 			if (editor.window != window) editor.window = window;
@@ -91,8 +97,17 @@ namespace XNodeEditor.Internal {
 			}
 		}
 
+		/// <summary> Clears stored editors. Called when a new graph opens. Ensures that NodeEditor.OnEnable is called as expected. </summary>
+		public static void ClearCachedEditors() {
+			editors = new Dictionary<K, T>();
+		}
+
 		/// <summary> Called on creation, after references have been set </summary>
+		[Obsolete("OnCreate() is deprecated, please use OnEnable() instead.")]
 		public virtual void OnCreate() { }
+
+		/// <summary> Called when a graph containing the node is opened </summary>
+		public virtual void OnEnable() { }
 
 		public interface INodeEditorAttrib {
 			Type GetInspectedType();

@@ -55,6 +55,7 @@ namespace XNodeEditor {
         }
 
         private void OnEnable() {
+            NodeEditor.ClearCachedEditors();
             // Reload portConnectionPoints if there are any
             int length = _references.Length;
             if (length == _rects.Length) {
@@ -202,6 +203,7 @@ namespace XNodeEditor {
             NodeEditorWindow w = GetWindow(typeof(NodeEditorWindow), false, "xNode", true) as NodeEditorWindow;
             w.wantsMouseMove = true;
             w.graph = graph;
+            NodeEditor.ClearCachedEditors();
             return w;
         }
 
