@@ -30,6 +30,7 @@ namespace XNodeEditor {
             DrawNodes();
             DrawSelectionBox();
             DrawTooltip();
+            DrawToolbar();
             graphEditor.OnGUI();
 
             // Run and reset onLateGUI
@@ -84,6 +85,28 @@ namespace XNodeEditor {
             // Draw tiled background
             GUI.DrawTextureWithTexCoords(rect, gridTex, new Rect(tileOffset, tileAmount));
             GUI.DrawTextureWithTexCoords(rect, crossTex, new Rect(tileOffset + new Vector2(0.5f, 0.5f), tileAmount));
+        }
+        
+        private void DrawToolbar() {
+            GUILayout.BeginHorizontal(EditorStyles.toolbar);
+            {
+                GUILayout.Space(2);
+                GUILayout.Label(graph.name, EditorStyles.boldLabel);
+                GUILayout.Space(10);
+
+                // Draw scale bar
+                GUILayout.Label("Scale", EditorStyles.miniLabel);
+                var newZoom = GUILayout.HorizontalSlider(
+                    zoom, 1f, 5f, GUILayout.MinWidth(40), GUILayout.MaxWidth(100)
+                );
+                GUILayout.Label(zoom.ToString("0.0#x"), EditorStyles.miniLabel, GUILayout.Width(30));
+                if (Math.Abs(newZoom - zoom) > Mathf.Epsilon) {
+                    zoom = newZoom;
+                }
+                
+                GUILayout.FlexibleSpace();
+            }
+            GUILayout.EndHorizontal();
         }
 
         public void DrawSelectionBox() {
