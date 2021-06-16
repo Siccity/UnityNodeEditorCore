@@ -389,27 +389,101 @@ namespace XNode {
         }
 #endregion
 
-        [Serializable] private class NodePortDictionary : Dictionary<string, NodePort>, ISerializationCallbackReceiver {
+        [Serializable] private class NodePortDictionary : ISerializationCallbackReceiver {
             [SerializeField] private List<string> keys = new List<string>();
             [SerializeField] private List<NodePort> values = new List<NodePort>();
+            private Dictionary<string, NodePort> dictionary = new Dictionary<string, NodePort>();
 
-            public void OnBeforeSerialize() {
+            /// <summary>
+            /// Gets the underlying dictionary of the NodePortDictionary. This dictionary should be used as read only. Changes to this dictionary will not be serialized.
+            /// </summary>
+            public Dictionary<string, NodePort> Dictionary => dictionary;
+            /// <summary>
+            /// Gets the keys of the NodePortDictionary. Keys are ordered by insertion time..
+            /// </summary>
+            public List<string> Keys => keys;
+            /// <summary>
+            /// Gets the values in the NodePortDictionary. Values are ordered by insertion time.
+            /// </summary>
+            public List<NodePort> Values => values;
+
+            /// <summary>
+            /// Adds the specified key and value to the NodePortDictionary.
+            /// </summary>
+            /// <param name="key">The key of the element to add.</param>
+            /// <param name="value">The value of the element to add.</param>
+            public void Add(string key, NodePort value) {
+                keys.Add(key);
+                values.Add(value);
+                dictionary.Add(key, value);
+            }
+
+            /// <summary>
+            /// Gets the value associated with the specified key.
+            /// </summary>
+            /// <param name="key">The key of the value to get.</param>
+            /// <returns>The value associated with the specified key.</returns>
+            public NodePort this[string key] {
+                get => dictionary[key];
+            }
+
+            /// <summary>
+            /// Determines whether the NodePortDictionary contains the specified key.
+            /// </summary>
+            /// <param name="key">The key to locate in the NodePortDictionary.</param>
+            /// <returns>true if the NodePortDictionary contains an element with the specified key; otherwise, false.</returns>
+            public bool ContainsKey(string key) {
+                return dictionary.ContainsKey(key);
+            }
+
+            /// <summary>
+            /// Gets the value associated with the specified key.
+            /// </summary>
+            /// <param name="key">The key of the value to get.</param>
+            /// <param name="value">When this method returns, contains the value associated with the specified key, if the key is found; otherwise, the default value for the type of the value parameter.</param>
+            /// <returns>true if the NodePortDictionary contains an element with the specified key; otherwise, false.</returns>
+            public bool TryGetValue(string key, out NodePort value) {
+                var result = dictionary.TryGetValue(key, out NodePort dictionaryValue);
+                value = dictionaryValue;
+                return result;
+            }
+
+            /// <summary>
+            /// Removes all keys and values from the NodePortDictionary
+            /// </summary>
+            public void Clear()
+            {
+                dictionary.Clear();
                 keys.Clear();
                 values.Clear();
-                foreach (KeyValuePair<string, NodePort> pair in this) {
-                    keys.Add(pair.Key);
-                    values.Add(pair.Value);
+            }
+
+            /// <summary>
+            /// Removes the value with the specified key from the NodePortDictionary.
+            /// </summary>
+            /// <param name="key">The key of the element to remove.</param>
+            /// <returns>true if the element is successfully found and removed; otherwise, false.</returns>
+            public bool Remove(string key) {
+                if (dictionary.ContainsKey(key))
+                {
+                    var index = keys.IndexOf(key);
+                    keys.RemoveAt(index);
+                    values.RemoveAt(index);
                 }
+                return dictionary.Remove(key);
+            }
+
+            public void OnBeforeSerialize() {
             }
 
             public void OnAfterDeserialize() {
-                this.Clear();
+                dictionary.Clear();
 
                 if (keys.Count != values.Count)
                     throw new System.Exception("there are " + keys.Count + " keys and " + values.Count + " values after deserialization. Make sure that both key and value types are serializable.");
 
                 for (int i = 0; i < keys.Count; i++)
-                    this.Add(keys[i], values[i]);
+                    dictionary.Add(keys[i], values[i]);
             }
         }
     }
