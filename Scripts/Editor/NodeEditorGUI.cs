@@ -118,6 +118,19 @@ namespace XNodeEditor {
                 contextMenu.AddItem(new GUIContent(string.Format("Disconnect({0})", name)), false, () => hoveredPort.Disconnect(index));
             }
             contextMenu.AddItem(new GUIContent("Clear Connections"), false, () => hoveredPort.ClearConnections());
+            if (hoveredPort.IsDynamic && hoveredPort.IsOutput) {
+                contextMenu.AddItem(new GUIContent($"Remove({hoveredPort.fieldName})"), false, () => {
+                    hoveredPort.node.RemoveDynamicPort(hoveredPort);
+                });
+                contextMenu.AddItem(new GUIContent($"Rename({hoveredPort.fieldName})"), false, () => {
+                    TextInputPopup dlg = TextInputPopup.Show(hoveredPort.fieldName, "Rename Port", "Port Name");
+                    dlg.onAfterClose += () => {
+                        XNode.Node node = hoveredPort.node;
+                        node.RenameDynamicPort(hoveredPort, dlg.input);
+                        EditorUtility.SetDirty(graph);
+                    };
+                });
+            }
             //Get compatible nodes with this port
             if (NodeEditorPreferences.GetSettings().createFilter) {
                 contextMenu.AddSeparator("");

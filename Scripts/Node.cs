@@ -181,9 +181,31 @@ namespace XNode {
         public void RemoveDynamicPort(NodePort port) {
             if (port == null) throw new ArgumentNullException("port");
             else if (port.IsStatic) throw new ArgumentException("cannot remove static port");
+            OnRemoveDynamicPort(port);
             port.ClearConnections();
             ports.Remove(port.fieldName);
         }
+
+        /// <summary> Rename an dynamic port</summary>
+        public void RenameDynamicPort(NodePort port, string newFileName) {
+            if(!port.IsDynamic) {
+                return;
+            }
+            XNode.NodePort newPort = AddDynamicOutput(
+                port.ValueType,
+                port.connectionType,
+                port.typeConstraint,
+                newFileName
+                );
+            if (port.Connection != null) {
+                newPort.Connect(port.Connection);
+            }
+            OnRenameDynamicPort(port.fieldName, newFileName);
+            RemoveDynamicPort(port);
+        }
+
+        protected virtual void OnRenameDynamicPort(string oldName, string newName) { }
+        protected virtual void OnRemoveDynamicPort(NodePort port) { }
 
         /// <summary> Removes all dynamic ports from the node </summary>
         [ContextMenu("Clear Dynamic Ports")]
