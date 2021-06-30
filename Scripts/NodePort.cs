@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -19,7 +19,7 @@ namespace XNode {
             }
         }
 
-        public IO direction { 
+        public IO direction {
             get { return _direction; }
             internal set { _direction = value; }
         }
@@ -335,16 +335,33 @@ namespace XNode {
             int aConnectionCount = connections.Count;
             int bConnectionCount = targetPort.connections.Count;
 
+            List<List<Vector2>> aReroutePoints = new List<List<Vector2>>();
+            List<List<Vector2>> bReroutePoints = new List<List<Vector2>>();
+
             List<NodePort> portConnections = new List<NodePort>();
             List<NodePort> targetPortConnections = new List<NodePort>();
 
             // Cache port connections
             for (int i = 0; i < aConnectionCount; i++)
+            {
                 portConnections.Add(connections[i].Port);
+                aReroutePoints.Add(new List<Vector2>());
+                for (int e = 0; e < connections[i].reroutePoints.Count; e++)
+                {
+                    aReroutePoints[i].Add(connections[i].reroutePoints[e]);
+                }
+            }
 
-            // Cache target port connections
+            // Cache target port connections and reroute points
             for (int i = 0; i < bConnectionCount; i++)
+            {
                 targetPortConnections.Add(targetPort.connections[i].Port);
+                bReroutePoints.Add(new List<Vector2>());
+                for (int e = 0; e < targetPort.connections[i].reroutePoints.Count; e++)
+                {
+                    bReroutePoints[i].Add(targetPort.connections[i].reroutePoints[e]);
+                }
+            }
 
             ClearConnections();
             targetPort.ClearConnections();
@@ -357,6 +374,15 @@ namespace XNode {
             for (int i = 0; i < targetPortConnections.Count; i++)
                 Connect(targetPortConnections[i]);
 
+            // Add the reroute poins
+            for (int i = 0; i < aConnectionCount; i++)
+            {
+                targetPort.connections[i].reroutePoints = aReroutePoints[i];
+            }
+            for (int i = 0; i < bConnectionCount; i++)
+            {
+                connections[i].reroutePoints = bReroutePoints[i];
+            }
         }
 
         /// <summary> Copy all connections pointing to a node and add them to this one </summary>
